@@ -1,6 +1,7 @@
 import React,{useState} from 'react'
 import axios from 'axios'
 import {faSpinner} from '@fortawesome/free-solid-svg-icons'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 
 const Register = () => {
   const [username, setUsername] = useState('')
