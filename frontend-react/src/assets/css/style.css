@@ -1,3 +1,22 @@
-body{
+/* body{
     background-color: rgb(47, 45, 45);
+} */
+ body{
+  margin:0;
+  padding:0;
+  background: #020617;
+  overflow-x:hidden;
+  font-family: 'Poppins', sans-serif;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+.card-hover{
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover{
+  transform: translateY(-10px);
 }

@@ -1,4 +1,4 @@
-import {useState, useContext} from 'react'
+import {useState, useContext, createContext} from 'react'
 
 
 // Create a context for authentication
@@ -12,7 +12,7 @@ const AuthProvider = ({children}) => {
   return (
     <>
     <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn}}>
-        {children} //Means all the other compnonent
+        {children} {/* Means all the other components */}
     </AuthContext.Provider>
       
     </>
