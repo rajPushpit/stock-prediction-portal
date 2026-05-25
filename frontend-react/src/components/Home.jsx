@@ -1,6 +1,6 @@
 import React from 'react'
 import Button from './Button'
-
+import { Link } from "react-router-dom";
 const Home = () => {
 
   return (
@@ -347,6 +347,11 @@ const Home = () => {
 
             {/* CARD 1 */}
             <div className="col-md-4">
+              <Link
+                  to="/dashboard"
+                  style={{ textDecoration: "none" 
+
+                  }}>
 
               <div
                 className="card-hover p-4 rounded-5 h-100"
@@ -356,7 +361,7 @@ const Home = () => {
                 }}
               >
 
-                <div className="display-4 mb-4">
+                <div className="display-4 mb-4" >
                   📊
                 </div>
 
@@ -375,11 +380,17 @@ const Home = () => {
                 </p>
 
               </div>
+              </Link>
 
             </div>
 
             {/* CARD 2 */}
             <div className="col-md-4">
+              <Link
+                  to="/dashboard"
+                  style={{ textDecoration: "none" 
+                    
+                  }}>
 
               <div
                 className="card-hover p-4 rounded-5 h-100"
@@ -408,11 +419,17 @@ const Home = () => {
                 </p>
 
               </div>
+              </Link>
 
             </div>
 
             {/* CARD 3 */}
             <div className="col-md-4">
+              <Link
+                  to="/dashboard"
+                  style={{ textDecoration: "none" 
+                    
+                  }}>
 
               <div
                 className="card-hover p-4 rounded-5 h-100"
@@ -441,6 +458,7 @@ const Home = () => {
                 </p>
 
               </div>
+              </Link>
 
             </div>
 

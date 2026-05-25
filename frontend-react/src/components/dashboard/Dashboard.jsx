@@ -1,295 +1,407 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from "react";
+import axiosInstance from "../../axiosInstance";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSpinner,
+  faChartLine,
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 
-import axiosInstance from '../../axiosinstance'
+import "./Dashboard.css";
 
 const Dashboard = () => {
+  const [ticker, setTicker] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] = useState(true)
-  const [protectedData, setProtectedData] = useState(null)
+  const [plot, setPlot] = useState("");
+  const [ma100, setMA100] = useState("");
+  const [ma200, setMA200] = useState("");
+  const [prediction, setPrediction] = useState("");
+
+  const [mse, setMSE] = useState(null);
+  const [rmse, setRMSE] = useState(null);
+  const [r2, setR2] = useState(null);
+
+  const [marketData, setMarketData] = useState([]);
+  const [news, setNews] = useState([]);
+
+  const tickerRef = useRef(null);
+
+  const scrollLeft = () => {
+    tickerRef.current?.scrollBy({
+      left: -300,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollRight = () => {
+    tickerRef.current?.scrollBy({
+      left: 300,
+      behavior: "smooth",
+    });
+  };
+
+  const fetchMarketData = async () => {
+    try {
+      const res = await axiosInstance.get(
+        "/market-overview/"
+      );
+
+      setMarketData(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchNews = async () => {
+    try {
+      const res = await axiosInstance.get(
+        "/market-news/"
+      );
+
+      setNews(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
+    axiosInstance.get("/protected-view/");
 
-    const fetchProtectedData = async () => {
+    fetchMarketData();
+    fetchNews();
 
-      try {
+    const interval = setInterval(() => {
+      fetchMarketData();
+    }, 30000);
 
-        const response =
-          await axiosInstance.get('/protected-view/')
+    return () => clearInterval(interval);
+  }, []);
 
-        console.log('Success:', response.data)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        setProtectedData(response.data)
+    setLoading(true);
+    setError("");
 
-      } catch (error) {
+    try {
+      const response = await axiosInstance.post(
+        "/predict/",
+        {
+          ticker,
+        }
+      );
 
-        console.error(
-          'Error fetching protected data:',
-          error
-        )
+      const backendRoot =
+        import.meta.env.VITE_BACKEND_ROOT;
 
-      } finally {
+      setPlot(
+        `${backendRoot}${response.data.plot_img}`
+      );
 
-        setLoading(false)
+      setMA100(
+        `${backendRoot}${response.data.plot_100_dma}`
+      );
 
+      setMA200(
+        `${backendRoot}${response.data.plot_200_dma}`
+      );
+
+      setPrediction(
+        `${backendRoot}${response.data.plot_prediction}`
+      );
+
+      setMSE(response.data.mse);
+      setRMSE(response.data.rmse);
+      setR2(response.data.r2);
+
+      if (response.data.error) {
+        setError(response.data.error);
       }
-
+    } catch (error) {
+      setError("Unable to fetch prediction.");
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-
-    fetchProtectedData()
-
-  }, [])
+  };
 
   return (
-    <>
-      <div
-        className="min-vh-100 py-5"
-        style={{
-          background:
-            'linear-gradient(135deg,#020617 0%,#071126 45%,#0f172a 100%)'
-        }}
-      >
+    <div className="dashboard-bg min-vh-100 py-4">
+      <div className="container">
 
-        <div className="container">
+        {/* MARKET TICKER */}
 
-          {/* HEADER */}
-          <div className="mb-5">
+        <div className="ticker-wrapper glass-card mb-4">
 
-            <h1
-              className="fw-bold text-white"
-              style={{
-                fontSize: '3rem'
-              }}
-            >
-              📈 AI Stock Dashboard
-            </h1>
+          <button
+            className="ticker-btn"
+            onClick={scrollLeft}
+          >
+            <FontAwesomeIcon
+              icon={faChevronLeft}
+            />
+          </button>
 
-            <p
-              style={{
-                color: '#94a3b8',
-                fontSize: '1.1rem'
-              }}
-            >
-              Welcome to your intelligent stock prediction workspace.
-            </p>
+          <div
+            className="market-ticker"
+            ref={tickerRef}
+          >
+            {marketData.map(
+              (item, index) => (
+                <div
+                  key={index}
+                  className="ticker-item"
+                >
+                  <div className="ticker-name">
+                    {item.name}
+                  </div>
 
+                  <div className="ticker-price">
+                    {item.price}
+                  </div>
+
+                  <div
+                    className={
+                      item.change >= 0
+                        ? "positive"
+                        : "negative"
+                    }
+                  >
+                    {item.change}
+                  </div>
+                </div>
+              )
+            )}
           </div>
 
-          {/* LOADING */}
-          {loading ? (
-
-            <div className="text-center py-5">
-
-              <div
-                className="spinner-border text-info"
-                style={{
-                  width: '4rem',
-                  height: '4rem'
-                }}
-              ></div>
-
-              <p className="text-light mt-4">
-                Loading Dashboard...
-              </p>
-
-            </div>
-
-          ) : (
-
-            <>
-              {/* TOP CARDS */}
-              <div className="row g-4 mb-5">
-
-                {/* CARD 1 */}
-                <div className="col-md-4">
-
-                  <div
-                    className="p-4 rounded-5 h-100"
-                    style={{
-                      background: '#0f172a',
-                      border:
-                        '1px solid rgba(255,255,255,0.08)'
-                    }}
-                  >
-
-                    <h5 className="text-secondary">
-                      Market Status
-                    </h5>
-
-                    <h2 className="text-success fw-bold">
-                      Bullish 📈
-                    </h2>
-
-                    <p className="text-secondary mb-0">
-                      AI predicts positive market momentum.
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* CARD 2 */}
-                <div className="col-md-4">
-
-                  <div
-                    className="p-4 rounded-5 h-100"
-                    style={{
-                      background: '#0f172a',
-                      border:
-                        '1px solid rgba(255,255,255,0.08)'
-                    }}
-                  >
-
-                    <h5 className="text-secondary">
-                      Prediction Accuracy
-                    </h5>
-
-                    <h2 className="text-info fw-bold">
-                      92%
-                    </h2>
-
-                    <p className="text-secondary mb-0">
-                      Based on historical market analysis.
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* CARD 3 */}
-                <div className="col-md-4">
-
-                  <div
-                    className="p-4 rounded-5 h-100"
-                    style={{
-                      background: '#0f172a',
-                      border:
-                        '1px solid rgba(255,255,255,0.08)'
-                    }}
-                  >
-
-                    <h5 className="text-secondary">
-                      AI Signals
-                    </h5>
-
-                    <h2 className="text-warning fw-bold">
-                      18 Active
-                    </h2>
-
-                    <p className="text-secondary mb-0">
-                      Live AI-generated stock opportunities.
-                    </p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* MAIN DASHBOARD */}
-              <div className="row g-4">
-
-                {/* LEFT PANEL */}
-                <div className="col-lg-8">
-
-                  <div
-                    className="p-4 rounded-5 h-100"
-                    style={{
-                      background: '#0f172a',
-                      border:
-                        '1px solid rgba(255,255,255,0.08)'
-                    }}
-                  >
-
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-
-                      <div>
-
-                        <h3 className="text-white fw-bold">
-                          Stock Analytics
-                        </h3>
-
-                        <p className="text-secondary mb-0">
-                          AI-driven market overview
-                        </p>
-
-                      </div>
-
-                      <div
-                        className="px-3 py-2 rounded-pill"
-                        style={{
-                          background:
-                            'rgba(34,197,94,0.15)',
-                          color: '#22c55e'
-                        }}
-                      >
-                        +12.8%
-                      </div>
-
-                    </div>
-
-                    {/* IMAGE */}
-                    <img
-                      src="https://img.freepik.com/free-vector/gradient-stock-market-concept_52683-76355.jpg"
-                      alt="Stock Dashboard"
-                      className="img-fluid rounded-4"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* RIGHT PANEL */}
-                <div className="col-lg-4">
-
-                  <div
-                    className="p-4 rounded-5"
-                    style={{
-                      background: '#0f172a',
-                      border:
-                        '1px solid rgba(255,255,255,0.08)'
-                    }}
-                  >
-
-                    <h4 className="text-white fw-bold mb-4">
-                      Protected API Response 🔐
-                    </h4>
-
-                    <div
-                      className="p-3 rounded-4"
-                      style={{
-                        background:
-                          'rgba(255,255,255,0.04)'
-                      }}
-                    >
-
-                      <pre
-                        className="mb-0"
-                        style={{
-                          color: '#22d3ee',
-                          whiteSpace: 'pre-wrap'
-                        }}
-                      >
-                        {JSON.stringify(
-                          protectedData,
-                          null,
-                          2
-                        )}
-                      </pre>
-
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            </>
-          )}
+          <button
+            className="ticker-btn"
+            onClick={scrollRight}
+          >
+            <FontAwesomeIcon
+              icon={faChevronRight}
+            />
+          </button>
 
         </div>
 
-      </div>
-    </>
-  )
-}
+        {/* HEADER */}
 
-export default Dashboard
+        <div className="text-center mb-5">
+          <h1 className="display-4 fw-bold text-white">
+            <FontAwesomeIcon
+              icon={faChartLine}
+            />
+            {" "}
+            Stock Predictor AI
+          </h1>
+
+          <p className="text-light opacity-75">
+            Analyze stocks with Machine
+            Learning predictions
+          </p>
+        </div>
+
+        {/* SEARCH */}
+
+        <div
+          className="glass-card p-4 mx-auto mb-5"
+          style={{
+            maxWidth: "750px",
+          }}
+        >
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control form-control-lg"
+                placeholder="Enter Stock Ticker (AAPL, TSLA, NVDA)"
+                value={ticker}
+                onChange={(e) =>
+                  setTicker(
+                    e.target.value.toUpperCase()
+                  )
+                }
+                required
+              />
+
+              <button
+                className="btn btn-primary px-4"
+                type="submit"
+              >
+                {loading ? (
+                  <>
+                    <FontAwesomeIcon
+                      icon={faSpinner}
+                      spin
+                    />{" "}
+                    Loading
+                  </>
+                ) : (
+                  "Predict"
+                )}
+              </button>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger mt-3">
+                {error}
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* NEWS + TRENDING */}
+
+        <div className="row g-4 mb-5">
+
+          <div className="col-lg-6">
+            <div className="glass-card p-4 h-100">
+              <h4 className="text-white mb-4">
+                Latest Market News
+              </h4>
+
+              {news.length > 0 ? (
+                news.map(
+                  (article, index) => (
+                    <div
+                      key={index}
+                      className="news-item"
+                    >
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {article.title}
+                      </a>
+
+                      <small>
+                        {article.source}
+                      </small>
+                    </div>
+                  )
+                )
+              ) : (
+                <p className="text-light">
+                  No news available
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="col-lg-6">
+            <div className="glass-card p-4 ">
+              <h4 className="text-white mb-4">
+                Trending Markets
+              </h4>
+
+              {marketData.map(
+                (item, index) => (
+                  <div
+                    key={index}
+                    className="market-row"
+                  >
+                    <span>
+                      {item.name}
+                    </span>
+
+                    <span>
+                      {item.price}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* METRICS */}
+
+        {prediction && (
+          <>
+            <div className="row g-4 mb-5">
+
+              <div className="col-md-4">
+                <div className="metric-card">
+                  <h6>MSE</h6>
+                  <h3 className="text-success">
+                    {Number(mse).toFixed(2)}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="col-md-4">
+                <div className="metric-card">
+                  <h6>RMSE</h6>
+                  <h3 className="text-info">
+                    {Number(rmse).toFixed(2)}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="col-md-4">
+                <div className="metric-card">
+                  <h6>R² Score</h6>
+                  <h3 className="text-warning">
+                    {Number(r2).toFixed(4)}
+                  </h3>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="row g-4">
+
+              <ChartCard
+                title="Stock Closing Price"
+                image={plot}
+              />
+
+              <ChartCard
+                title="100 Day Moving Average"
+                image={ma100}
+              />
+
+              <ChartCard
+                title="200 Day Moving Average"
+                image={ma200}
+              />
+
+              <ChartCard
+                title="Prediction vs Original"
+                image={prediction}
+              />
+
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ChartCard = ({
+  title,
+  image,
+}) => (
+  <div className="col-lg-6">
+    <div className="glass-card chart-card h-100">
+      <h5 className="text-white mb-3">
+        {title}
+      </h5>
+
+      <img
+        src={image}
+        alt={title}
+        className="img-fluid rounded"
+      />
+    </div>
+  </div>
+);
+
+export default Dashboard;

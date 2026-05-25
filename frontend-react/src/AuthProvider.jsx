@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 const AuthProvider = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(
-        !!localStorage.getItem('access_Token')
+        !!localStorage.getItem('accessToken')
     )
   return (
     <>

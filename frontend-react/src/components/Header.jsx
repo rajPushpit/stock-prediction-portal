@@ -19,8 +19,8 @@ const Header = () => {
   const handleLogout = () => {
 
     // Remove Tokens
-    localStorage.removeItem('access_Token')
-    localStorage.removeItem('refresh_Token')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
 
     // Update Auth State
     setIsLoggedIn(false)

@@ -43,12 +43,12 @@ const Login = () => {
 
       // Save Tokens
       localStorage.setItem(
-        'access_Token',
+        'accessToken',
         response.data.access
       )
 
       localStorage.setItem(
-        'refresh_Token',
+        'refreshToken',
         response.data.refresh
       )
 
