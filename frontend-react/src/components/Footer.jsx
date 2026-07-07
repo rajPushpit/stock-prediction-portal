@@ -83,7 +83,7 @@ const Footer = () => {
                   © {new Date().getFullYear()} — Built with ❤️ by{' '}
 
                   <span className="text-info fw-semibold">
-                    Pushpit Raj
+                    Pushpit
                   </span>
 
                 </p>

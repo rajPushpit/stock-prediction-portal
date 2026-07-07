@@ -10,6 +10,10 @@ const axiosInstance = axios.create({
 });
 
 // Request interceptor to add the access token to headers
+// Interceptors Axios ke middleman hote hain. Ye har request 
+// bhejne se pehle aur har response aane ke baad automatically run hote hain.
+// Request Interceptor: Runs before an HTTP request is sent. Used to add authentication tokens, headers, logging, or modify requests.
+
 
 axiosInstance.interceptors.request.use(
     function (config) {
@@ -26,6 +30,9 @@ axiosInstance.interceptors.request.use(
 );
 
 // Response interceptor to handle 401 errors and attempt token refresh
+// Response Interceptor: Runs after a response is received. Used for centralized 
+// error handling, token refresh, redirects, and response transformation.
+
 
 axiosInstance.interceptors.response.use(
     function (response) {
