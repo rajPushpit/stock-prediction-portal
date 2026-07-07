@@ -24,4 +24,5 @@ EXPOSE 8000
 # --bind 0.0.0.0:8000 = listen on port 8000
 # --workers 3 = run 3 worker processes
 
-CMD ["gunicorn", "stock_prediction.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# CMD ["gunicorn", "stock_prediction.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "stock_prediction.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "1", "--timeout", "180"]
