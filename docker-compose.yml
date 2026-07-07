@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend-drf
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn stock_prediction.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+
+  frontend:
+    build:
+      context: ./frontend-react
+      args:
+        VITE_SERVER_BASE_URL: "http://backend:8000"
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
